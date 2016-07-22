@@ -1,0 +1,99 @@
+import "cppexpr.stg"
+
+compileUnit(compileUnit) ::= <<
+
+#include "<compileUnit.baseFilename>.h"
+<compileUnit.includeFilenamesForCpp:{filename|#include \<<filename>\><\n>}>
+
+<compileUnit.decls:{decl|<dodecl(decl)>}>
+
+>>
+
+dodecl(decl) ::= <<
+<decl.staticFields:{field|<doField(field)>}>
+<decl.methods:{method|<doMethod(method)>}>  
+
+>>
+
+doField(varDeclCG) ::= <%
+    <varDeclCG.type> <varDeclCG.className>::<varDeclCG.name>_
+    <if(varDeclCG.initExpr)> = <(varDeclCG.initExpr.class.simpleName)(varDeclCG.initExpr)><endif>;
+    <\n><\n>
+%>
+
+doMethod(method) ::= <%
+    <if(method.body)>
+    <if(method.returnType)><method.returnType> <endif><method.fqClassName>::<method.name>( <method.parms:{parm|<parm.type> <parm.name>_}; separator=", "> ) 
+    <if(method.baseConstructorCall)>
+     <\n> : <CppMethodInvokeExprCG(method.baseConstructorCall)>
+    <endif>
+    <CppBlockStmtCG(method.body)>
+    <endif>
+    <\n>
+%>
+
+
+CppBlockStmtCG(block) ::= <<
+
+{
+  <block.statements:{stmt|<(stmt.class.simpleName)(stmt)>}; separator="\n">
+}
+
+>>
+
+EmptyStmtCG(emptyStmtCG) ::= ";"
+
+ExprStmtCG(exprStmtCG) ::= "<(exprStmtCG.exprCG.class.simpleName)(exprStmtCG.exprCG)>;"
+
+CppVarDeclStmtCG(varDeclStmtCG) ::= <%
+    <varDeclStmtCG.type> <varDeclStmtCG.id>
+    <if(varDeclStmtCG.initExpr)>
+        = <(varDeclStmtCG.initExpr.class.simpleName)(varDeclStmtCG.initExpr)>
+    <endif>
+    ;
+%>
+
+CppReturnStmtCG(returnStmtCG) ::= "return <if(returnStmtCG.returnExprCG)><(returnStmtCG.returnExprCG.class.simpleName)(returnStmtCG.returnExprCG)><endif>;"
+
+CppThrowStmtCG(throwStmtCG) ::= "throw <(throwStmtCG.throwExpr.class.simpleName)(throwStmtCG.throwExpr)>;"
+
+CppIfStmtCG(ifStmtCG) ::= <<
+if (<(ifStmtCG.condExpr.class.simpleName)(ifStmtCG.condExpr)>) 
+  <(ifStmtCG.thenStmt.class.simpleName)(ifStmtCG.thenStmt)>
+<if(ifStmtCG.elseStmt)>
+else
+  <(ifStmtCG.elseStmt.class.simpleName)(ifStmtCG.elseStmt)>
+<endif>
+
+>>
+
+CppWhileStmtCG(whileStmtCG) ::= <<
+while (<(whileStmtCG.condExpr.class.simpleName)(whileStmtCG.condExpr)>)
+  <(whileStmtCG.stmt.class.simpleName)(whileStmtCG.stmt)>
+
+>>
+
+CppContinueStmtCG(continueStmtCG) ::= <<
+continue;
+
+>>
+
+CppBreakStmtCG(breakStmtCG) ::= <<
+break;
+
+>>
+
+CppTryStmtCG(tryStmtCG) ::= <%
+  try
+  <CppBlockStmtCG(tryStmtCG.tryStmt)>
+  <tryStmtCG.catchList:{catchCG|<CppCatchCG(catchCG)>}; separator="\n">
+
+%>
+
+CppCatchCG(catchCG) ::= <<
+catch (<catchCG.catchParm.type> <catchCG.catchParm.name>_)
+<CppBlockStmtCG(catchCG.catchBlock)>
+
+>>
+
+  

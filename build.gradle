@@ -1,0 +1,15 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+
+mainClassName = 'javaic.Main'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.antlr:antlr4:4.5.3'
+    compile 'org.antlr:ST4:4.0.8'
+    compile files(org.gradle.internal.jvm.Jvm.current().toolsJar)    
+}

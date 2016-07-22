@@ -1,0 +1,160 @@
+compileUnit(compileUnit) ::= <<
+from jclib import *
+import abc
+<compileUnit.moduleListForHeader:{modulename|<doImport(modulename)>}> 
+<compileUnit.decls:{decl|<dodecl(decl)>}>
+<compileUnit.moduleListForFooter:{modulename|<doImport(modulename)>}> 
+>>
+
+doImport(modulename) ::= <<
+from <modulename> import *
+
+>>
+
+dodecl(decl) ::= <<
+class <decl.qualifiedName><doextends(decl.extendsClassName)>:
+  class_ = java_lang_Class("<decl.qualifiedName>")
+
+  def getClass_(self): 
+    return <decl.qualifiedName>.class_
+
+  <decl.methods:{method|<doMethod(method)>}>  
+  
+
+
+<decl.implementedInterfaces:{interface|<interface>.register(<decl.qualifiedName>)}; separator="\n">
+
+<decl.classFields:{field|<doField(decl.qualifiedName, field)>}>
+
+>>
+
+doextends(className) ::= "<if(className)>(<className>)<endif>"
+
+doField(className, field) ::= <<
+<className>.<field.name> = <(field.initExpr.class.simpleName)(field.initExpr)>
+
+>>
+
+doMethod(method) ::= <<
+
+<if(method.isStatic)>@classmethod<endif>
+def <method.name>( <method.parms:{parm|<parm.name>}; separator=", "> ):
+<if(method.body)>
+  <PyBlockStmtCG(method.body)>
+<else>
+  pass
+<endif>
+>>
+
+doExprList(exprCGList) ::= "<exprCGList:{expr|<(expr.class.simpleName)(expr)>}; separator=\", \">"
+
+PyBlockStmtCG(block) ::= <<
+<block.statements:{stmt|<(stmt.class.simpleName)(stmt)>}; separator="\n">
+>>
+
+EmptyStmtCG(emptyStmtCG) ::= "pass"
+
+ExprStmtCG(exprStmtCG) ::= "<(exprStmtCG.exprCG.class.simpleName)(exprStmtCG.exprCG)>"
+
+PyVarDeclStmtCG(varDeclStmtCG) ::= <%
+    <if(varDeclStmtCG.initExpr)>
+        <varDeclStmtCG.id> = <(varDeclStmtCG.initExpr.class.simpleName)(varDeclStmtCG.initExpr)>
+    <endif>
+%>
+
+PyReturnStmtCG(returnStmtCG) ::= "return <if(returnStmtCG.returnExprCG)><(returnStmtCG.returnExprCG.class.simpleName)(returnStmtCG.returnExprCG)><endif>"
+
+PyThrowStmtCG(throwStmtCG) ::= "raise <(throwStmtCG.throwExpr.class.simpleName)(throwStmtCG.throwExpr)>"
+
+PyIfStmtCG(ifStmtCG) ::= <<
+if <(ifStmtCG.condExpr.class.simpleName)(ifStmtCG.condExpr)>:
+  <(ifStmtCG.thenStmt.class.simpleName)(ifStmtCG.thenStmt)>
+<if(ifStmtCG.elseStmt)>
+else:
+  <(ifStmtCG.elseStmt.class.simpleName)(ifStmtCG.elseStmt)>
+<endif>
+
+>>
+
+PyWhileStmtCG(whileStmtCG) ::= <<
+while <(whileStmtCG.condExpr.class.simpleName)(whileStmtCG.condExpr)>:
+  <(whileStmtCG.stmt.class.simpleName)(whileStmtCG.stmt)>
+
+>>
+
+PyContinueStmtCG(continueStmtCG) ::= <<
+continue
+
+>>
+
+PyBreakStmtCG(breakStmtCG) ::= <<
+break
+
+>>
+
+PyTryStmtCG(tryStmtCG) ::= <<
+try:
+  <PyBlockStmtCG(tryStmtCG.tryStmt)>
+<tryStmtCG.catchList:{catchCG|<PyCatchCG(catchCG)>}; separator="\n">
+
+>>
+
+PyCatchCG(catchCG) ::= <<
+except <catchCG.catchParmType> as <catchCG.catchParmName>:
+  <PyBlockStmtCG(catchCG.catchBlock)>
+
+>>
+
+PyAsmtExprCG(asmtExprCG) ::= "<(asmtExprCG.lhsCG.class.simpleName)(asmtExprCG.lhsCG)> = <(asmtExprCG.exprCG.class.simpleName)(asmtExprCG.exprCG)>"
+
+PyIDExprCG(idExprCG) ::= "<idExprCG.id>"
+
+PyLitExprCG(litExprCG) ::= "<litExprCG>"
+
+VerbatimExprCG(verbExprCG) ::= "<verbExprCG.exprText>"
+
+PyArrayIndexExprCG(arrInxExprCG) ::= "<(arrInxExprCG.arrayExprCG.class.simpleName)(arrInxExprCG.arrayExprCG)>[<(arrInxExprCG.indexExprCG.class.simpleName)(arrInxExprCG.indexExprCG)>]"
+
+PyMemberSelectExprCG(memSelExprCG) ::= <%
+  <if(memSelExprCG.global)>
+    <! global function !>
+    <memSelExprCG.id>
+  <elseif(memSelExprCG.constructor)>
+    <! this() or super() !>
+    <memSelExprCG.id> 
+  <else>
+    <if(memSelExprCG.expr)><(memSelExprCG.expr.class.simpleName)(memSelExprCG.expr)>
+    <else><memSelExprCG.fullClassName>
+    <endif>
+    .
+    <memSelExprCG.id>
+  <endif>
+%>
+
+PyMethodInvokeExprCG(methInvExprCG) ::= "<PyMemberSelectExprCG(methInvExprCG.methodExprCG)>(<doExprList(methInvExprCG.args)>)"
+
+PyNewClassExprCG(newClassExprCG) ::= "<newClassExprCG.id>(<newClassExprCG.args:{arg|<(arg.class.simpleName)(arg)>}; separator=\", \">)"
+
+PyBinExprCG(binExprCG) ::= <%
+  <if(!binExprCG.isAssign)>(<endif>
+  <(binExprCG.left.class.simpleName)(binExprCG.left)> <binExprCG.op> <(binExprCG.right.class.simpleName)(binExprCG.right)>
+  <if(!binExprCG.isAssign)>)<endif>
+%>
+
+PyUnaryExprCG(unaryExprCG) ::= "(<unaryExprCG.op> <(unaryExprCG.expr.class.simpleName)(unaryExprCG.expr)>)"
+
+PyCondExprCG(condExprCG) ::= <%
+    <(condExprCG.trueExpr.class.simpleName)(condExprCG.trueExpr)> if<\ >
+    <(condExprCG.condExpr.class.simpleName)(condExprCG.condExpr)> else<\ >
+    <(condExprCG.falseExpr.class.simpleName)(condExprCG.falseExpr)>
+%>
+ 
+PyNewArrayExprCG(newArrExprCG) ::= <%
+  <if(newArrExprCG.dimensExpr.empty)>
+    [ <doExprList(newArrExprCG.initExpr)> ]
+  <else>
+    jcl_makeListArr(<newArrExprCG.elDefaultValue>, <doExprList(newArrExprCG.dimensExpr)>)
+  <endif>
+%>
+
+  

@@ -1,0 +1,58 @@
+
+doExprList(exprCGList) ::= "<exprCGList:{expr|<(expr.class.simpleName)(expr)>}; separator=\", \">"
+
+CppAsmtExprCG(asmtExprCG) ::= "<(asmtExprCG.lhsCG.class.simpleName)(asmtExprCG.lhsCG)> = <(asmtExprCG.exprCG.class.simpleName)(asmtExprCG.exprCG)>"
+
+CppIDExprCG(idExprCG) ::= "<idExprCG.idR>"
+
+CppLitExprCG(litExprCG) ::= "<litExprCG>"
+
+VerbatimExprCG(verbExprCG) ::= "<verbExprCG.exprText>"
+
+CppArrayIndexExprCG(arrInxExprCG) ::= "<(arrInxExprCG.arrayExprCG.class.simpleName)(arrInxExprCG.arrayExprCG)>->AT(<(arrInxExprCG.indexExprCG.class.simpleName)(arrInxExprCG.indexExprCG)>)"
+
+CppMemberSelectExprCG(memSelExprCG) ::= <%
+  <if(memSelExprCG.global)>
+    <! global function !>
+    <memSelExprCG.id>
+  <elseif(memSelExprCG.constructor)>
+    <! this() or super() !>
+    <memSelExprCG.id> 
+  <else>
+    <if(memSelExprCG.expr)>(<(memSelExprCG.expr.class.simpleName)(memSelExprCG.expr)>)->
+    <else><memSelExprCG.fullClassName>::
+    <endif>
+    <memSelExprCG.id>
+  <endif>
+%>
+
+CppMethodInvokeExprCG(methInvExprCG) ::= "<CppMemberSelectExprCG(methInvExprCG.methodExprCG)>(<doExprList(methInvExprCG.args)>)"
+
+CppNewClassExprCG(newClassExprCG) ::= "(new <newClassExprCG.id><newClassExprCG.typeArgsR>(<newClassExprCG.args:{arg|<(arg.class.simpleName)(arg)>}; separator=\", \">))"
+
+CppBinExprCG(binExprCG) ::= <%
+  <if(!binExprCG.isAssign)>(<endif>
+  <(binExprCG.left.class.simpleName)(binExprCG.left)> <binExprCG.op> <(binExprCG.right.class.simpleName)(binExprCG.right)>
+  <if(!binExprCG.isAssign)>)<endif>
+%>
+
+CppUnaryExprCG(unaryExprCG) ::= "(<unaryExprCG.op> <(unaryExprCG.expr.class.simpleName)(unaryExprCG.expr)>)"
+ 
+CppNewArrayExprCG(newArrExprCG) ::= <%
+  <if(newArrExprCG.dimensExpr.empty)>
+    new Array\<<newArrExprCG.elTypeR>>(std::vector\<<newArrExprCG.elTypeR>> { <doArrayInitExprList(newArrExprCG.initExpr, newArrExprCG.elTypeR)> })
+  <else>
+    createArray\<<newArrExprCG.ultimateElTypeR>>(<newArrExprCG.elDefaultValue>, <doExprList(newArrExprCG.dimensExpr)>)
+  <endif>
+%>
+
+doArrayInitExprList(exprCGList, elTypeR) ::= "<exprCGList:{expr|static_cast\<<elTypeR>>(<(expr.class.simpleName)(expr)>)}; separator=\", \">"
+
+
+CppCondExprCG(condExprCG) ::= <%
+    (<(condExprCG.condExpr.class.simpleName)(condExprCG.condExpr)> ?<\ >
+      <(condExprCG.trueExpr.class.simpleName)(condExprCG.trueExpr)> :<\ >
+      <(condExprCG.falseExpr.class.simpleName)(condExprCG.falseExpr)>)
+%>
+
+CppCastExprCG(castExprCG) ::= "static_cast\<<castExprCG.typeR>>(<(castExprCG.castExpr.class.simpleName)(castExprCG.castExpr)>)"

@@ -1,0 +1,96 @@
+package javaic.codegen;
+
+import javaic.codegen.model.ArrayIndexExprCG;
+import javaic.codegen.model.AsmtExprCG;
+import javaic.codegen.model.BinExprCG;
+import javaic.codegen.model.BlockStmtCG;
+import javaic.codegen.model.BreakStmtCG;
+import javaic.codegen.model.CastExprCG;
+import javaic.codegen.model.CatchCG;
+import javaic.codegen.model.CompileUnitCG;
+import javaic.codegen.model.CondExprCG;
+import javaic.codegen.model.ContinueStmtCG;
+import javaic.codegen.model.EmptyStmtCG;
+import javaic.codegen.model.ExprStmtCG;
+import javaic.codegen.model.IDExprCG;
+import javaic.codegen.model.IfStmtCG;
+import javaic.codegen.model.InstanceOfExprCG;
+import javaic.codegen.model.LitExprCG;
+import javaic.codegen.model.MemberSelectExprCG;
+import javaic.codegen.model.MethodDeclCG;
+import javaic.codegen.model.MethodInvokeExprCG;
+import javaic.codegen.model.NewArrayExprCG;
+import javaic.codegen.model.NewClassExprCG;
+import javaic.codegen.model.ReturnStmtCG;
+import javaic.codegen.model.ThrowStmtCG;
+import javaic.codegen.model.TryStmtCG;
+import javaic.codegen.model.TypeDeclCG;
+import javaic.codegen.model.UnaryExprCG;
+import javaic.codegen.model.VarDeclCG;
+import javaic.codegen.model.VarDeclStmtCG;
+import javaic.codegen.model.WhileStmtCG;
+import javaic.parsetree.ArrayIndexExprJSG;
+import javaic.parsetree.AsmtExprJSG;
+import javaic.parsetree.BinExprJSG;
+import javaic.parsetree.BlockStmtJSG;
+import javaic.parsetree.BreakStmtJSG;
+import javaic.parsetree.CastExprJSG;
+import javaic.parsetree.CatchJSG;
+import javaic.parsetree.CompileUnitJSG;
+import javaic.parsetree.CondExprJSG;
+import javaic.parsetree.ContinueStmtJSG;
+import javaic.parsetree.EmptyStatementJSG;
+import javaic.parsetree.ExprStmtJSG;
+import javaic.parsetree.IDExprJSG;
+import javaic.parsetree.IfStmtJSG;
+import javaic.parsetree.InstanceOfExprJSG;
+import javaic.parsetree.LitExprJSG;
+import javaic.parsetree.MemberSelectExprJSG;
+import javaic.parsetree.MethodDeclJSG;
+import javaic.parsetree.MethodInvokeExprJSG;
+import javaic.parsetree.NewArrayExprJSG;
+import javaic.parsetree.NewClassExprJSG;
+import javaic.parsetree.ReturnStmtJSG;
+import javaic.parsetree.ThrowStmtJSG;
+import javaic.parsetree.TryStmtJSG;
+import javaic.parsetree.TypeDeclJSG;
+import javaic.parsetree.UnaryExprJSG;
+import javaic.parsetree.VarDeclJSG;
+import javaic.parsetree.VarDeclStmtJSG;
+import javaic.parsetree.WhileStmtJSG;
+
+public abstract class CGNodeFactory {
+  public abstract CompileUnitCG createCompileUnitCG(CompileUnitJSG compileUnitJSG);
+  public abstract MethodDeclCG createMethodDeclCG(MethodDeclJSG methodDeclJSG);
+  public abstract TypeDeclCG createTypeDeclCG(TypeDeclJSG typeDeclJSG);
+  public abstract VarDeclCG createVarDeclCG(VarDeclJSG varDeclJSG);
+  public abstract IDExprCG createIDExprCG(IDExprJSG idExprJSG);
+  public abstract AsmtExprCG createAsmtExprCG(AsmtExprJSG asmtExprJSG);
+  public abstract LitExprCG createLitExprCG(LitExprJSG litExprJSG);
+  public abstract BlockStmtCG createBlockStmtCG(BlockStmtJSG blockStmtJSG);
+  public abstract EmptyStmtCG createEmptyStmtCG(EmptyStatementJSG emptyStatementJSG);
+  public abstract ExprStmtCG createExprStmtCG(ExprStmtJSG exprStmtJSG);
+  public abstract ArrayIndexExprCG createArrayIndexExprCG(
+      ArrayIndexExprJSG arrayIndexExprJSG);
+  public abstract MemberSelectExprCG createMemberSelectExprCG(
+      MemberSelectExprJSG memberSelectExprJSG);
+  public abstract ReturnStmtCG createReturnStmtCG(ReturnStmtJSG returnStmtJSG);
+  public abstract VarDeclStmtCG createVarDeclStmtCG(VarDeclStmtJSG varDeclStmtJSG);
+  public abstract MethodInvokeExprCG createMethodInvokeExprCG(
+      MethodInvokeExprJSG methodInvokeExprJSG);
+  public abstract NewClassExprCG createNewClassExprCG(NewClassExprJSG newClassExprJSG);
+  public abstract BinExprCG createBinExprCG(BinExprJSG binExprJSG);
+  public abstract UnaryExprCG createUnaryExprCG(UnaryExprJSG unaryExprJSG);
+  public abstract NewArrayExprCG createNewArrayExprCG(NewArrayExprJSG newArrayExprJSG);
+  public abstract IfStmtCG createIfStmtCG(IfStmtJSG ifStmtJSG);
+  public abstract ThrowStmtCG createThrowStmtCG(ThrowStmtJSG throwStmtJSG);
+  public abstract TryStmtCG createTryStmtCG(TryStmtJSG tryStmtJSG);
+  public abstract CatchCG createCatchCG(CatchJSG catchJSG);
+  public abstract WhileStmtCG createWhileStmtCG(WhileStmtJSG whileStmtJSG);
+  public abstract InstanceOfExprCG createInstanceOfExprCG(
+      InstanceOfExprJSG instanceOfExprJSG);
+  public abstract CastExprCG createCastExprCG(CastExprJSG castExprJSG);
+  public abstract BreakStmtCG createBreakStmtCG(BreakStmtJSG breakStmtJSG);
+  public abstract ContinueStmtCG createContinueStmtCG(ContinueStmtJSG continueStmtJSG);
+  public abstract CondExprCG createCondExprCG(CondExprJSG condExprJSG);
+}

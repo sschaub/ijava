@@ -1,0 +1,50 @@
+import "cppexpr.stg"
+
+compileUnit(compileUnit) ::= <<
+#ifndef _<compileUnit.headerPreprocessorName>_H
+#define _<compileUnit.headerPreprocessorName>_H
+
+#include \<lib.h>
+<compileUnit.includeFilenamesForHeader:{filename|#include \<<filename>\><\n>}>
+<compileUnit.classesUsed:{className|class <className>;<\n>}> 
+<compileUnit.decls:{decl|<dodecl(decl)>}>
+#endif
+
+>>
+
+dodecl(decl) ::= <<
+class <decl.qualifiedName><doextends(decl.extendsClassNames)> {
+
+  public:
+  static java_lang_Class* class_() { 
+    static java_lang_Class* clazz = new java_lang_Class("<decl.qualifiedName>");
+    
+    return clazz;
+  }
+  
+  java_lang_Class* getClass() { return <decl.qualifiedName>::class_(); }
+  
+  <decl.fields:{field|<doField(field)>}>
+  <decl.methods:{method|<doMethod(method)>}>  
+};<\n>
+
+>>
+
+doextends(classNames) ::= "<if(classNames)>: <classNames:{className|<className>}; separator=\", \"><endif>"
+
+doField(varDeclCG) ::= <%
+    <if(varDeclCG.isStatic)>static <endif><varDeclCG.type> <varDeclCG.name>_
+    <if(varDeclCG.doFieldInit)> = <(varDeclCG.initExpr.class.simpleName)(varDeclCG.initExpr)><endif>;
+    <\n><\n>
+%>
+
+doMethod(method) ::= <%
+    <if(method.isStatic)>static <endif><if(method.virtual)>virtual <endif>
+    <if(method.returnType)><method.returnType> <endif><method.name>( <method.parms:{parm|<parm.type> <parm.name>_}; separator=", "><if(method.optionalParmFlag)>=NULL<endif> ) 
+    <if(method.body)>
+      ;
+    <else>
+      = 0;<\n>
+    <endif>
+    <\n>
+%>
